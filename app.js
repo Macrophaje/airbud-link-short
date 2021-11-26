@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}))
 app.use(cors());
 
-const port = process.env.port || 3000;
+const port = process.env.PORT || 3000;
 
 const db = require(process.cwd() + '/urls.json');
 
@@ -47,6 +47,7 @@ app.post('/api/shorturl', (req,res) => {
     res.json({"short": shortUrl, "long": urlToShorten});
 })
 
-app.listen(port, () => {
+app.listen(port, (err) => {
+    if (err) throw err;
     console.log("App Running");
 })

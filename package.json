@@ -1,7 +1,7 @@
 {
   "name": "airbud-link-short",
   "version": "1.0.0",
-  "description": "Aurl shortener",
+  "description": "A url shortener",
   "main": "app.js",
   "scripts": {
     "test": "test",
