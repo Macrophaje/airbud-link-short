@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}))
 app.use(cors());
 
-const port = 3000;
+const port = process.env.port || 80;
 
 const db = require(process.cwd() + '/urls.json');
 
