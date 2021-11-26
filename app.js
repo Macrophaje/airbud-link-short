@@ -41,10 +41,9 @@ app.post('/api/shorturl', (req,res) => {
         db.urls.push({"short": shortUrl, "long": urlToShorten})
         fs.writeFile("urls.json", JSON.stringify(db), (err) => {
             if (err) throw err;
-            console.log("File overwritten");
+            console.log("Link Database Updated");
         })
     }
-
     res.json({"short": shortUrl, "long": urlToShorten});
 })
 
