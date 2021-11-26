@@ -1,0 +1,27 @@
+{
+  "name": "airbud-link-short",
+  "version": "1.0.0",
+  "description": "Aurl shortener",
+  "main": "app.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Macrophaje/airbud-link-short.git"
+  },
+  "author": "Macrophaje",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Macrophaje/airbud-link-short/issues"
+  },
+  "homepage": "https://github.com/Macrophaje/airbud-link-short#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "fs": "^0.0.1-security"
+  },
+  "devDependencies": {
+    "eslint": "^8.3.0"
+  }
+}
