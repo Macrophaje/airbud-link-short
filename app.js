@@ -1,10 +1,10 @@
 const express = require('express');
 const app = express();
-const fs = require('fs');
-const cors = require('cors')
-const dns = require('dns')
+const cors = require('cors');
+const dns = require('dns');
 require('url').URL;
 const codeGenerator = require('./shortCodeGenerator');
+const dbUtil = require('./db');
 
 app.use(express.json());
 app.use(express.urlencoded({extended: false}))
@@ -13,6 +13,8 @@ app.use(cors());
 const port = process.env.PORT || 3000;
 
 const db = require(process.cwd() + '/urls.json');
+
+dbUtil.loadDatabase();
 
 app.get('/', (req, res) => {
     res.sendFile(process.cwd() + '/views/index.html');
@@ -49,10 +51,7 @@ app.post('/api/shorturl', (req,res) => {
                 } else {
                     shortUrl = codeGenerator.generateShortUrlCode();
                     db.urls.push({"short": shortUrl, "long": urlToShorten});
-                    fs.writeFile("urls.json", JSON.stringify(db), (err) => {
-                        if (err) throw err;
-                        console.log("Link Database Updated");
-                    })
+                    dbUtil.writeToDatabase(db);
                     res.json({"Your short url": req.hostname + "/" + shortUrl});
                 }
             });
@@ -67,4 +66,4 @@ app.post('/api/shorturl', (req,res) => {
 app.listen(port, (err) => {
     if (err) throw err;
     console.log("App Running");
-})
+});
