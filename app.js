@@ -2,6 +2,8 @@ const express = require('express');
 const app = express();
 const fs = require('fs');
 const cors = require('cors')
+const dns = require('dns')
+require('url').URL;
 const codeGenerator = require('./shortCodeGenerator');
 
 app.use(express.json());
@@ -32,19 +34,34 @@ app.post('/api/shorturl', (req,res) => {
     const urlToShorten = req.body.url;
     let shortUrl;
     const findItem = url => url.long === urlToShorten;
+    let host;
 
     if (db.urls.some(findItem)) {
         const index = db.urls.findIndex(findItem)
         shortUrl = db.urls[index].short;
+        res.json({"Your short url": req.hostname + "/" + shortUrl});
     } else {
-        shortUrl = codeGenerator.generateShortUrlCode();
-        db.urls.push({"short": shortUrl, "long": urlToShorten})
-        fs.writeFile("urls.json", JSON.stringify(db), (err) => {
-            if (err) throw err;
-            console.log("Link Database Updated");
-        })
+        try {
+            host = new URL(urlToShorten).host
+            dns.lookup(host, (err) => {
+                if (err) {
+                    res.json({"error": "Bad URL"});
+                } else {
+                    shortUrl = codeGenerator.generateShortUrlCode();
+                    db.urls.push({"short": shortUrl, "long": urlToShorten});
+                    fs.writeFile("urls.json", JSON.stringify(db), (err) => {
+                        if (err) throw err;
+                        console.log("Link Database Updated");
+                    })
+                    res.json({"Your short url": req.hostname + "/" + shortUrl});
+                }
+            });
+        } catch (err) {
+            res.json({"error": "Bad URL"});
+        }
+        
     }
-    res.json({"Your short url": req.hostname + "/" + shortUrl});
+
 })
 
 app.listen(port, (err) => {
