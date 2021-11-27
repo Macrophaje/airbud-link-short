@@ -44,7 +44,7 @@ app.post('/api/shorturl', (req,res) => {
             console.log("Link Database Updated");
         })
     }
-    res.json({"short": shortUrl, "long": urlToShorten});
+    res.json({"Your short url": req.hostname + "/" + shortUrl});
 })
 
 app.listen(port, (err) => {
