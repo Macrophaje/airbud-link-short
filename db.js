@@ -1,23 +1,20 @@
-const fs = require('fs');
 const { default: axios } = require('axios');
 const dbUrl = process.env.DB_URL;
 const masterKey = process.env.JSON_BIN_KEY;
 
-function loadDatabase() {
+async function loadDatabase() {
+    const getUrl = dbUrl + "/latest";
     const config = {
         headers : {
             "X-Master-Key" : masterKey
         }
     }
-    let response
-    axios.get(dbUrl, config)
+    let response = await axios.get(getUrl, config)
         .then((res) => {
-            response = res.data.record;
-            fs.writeFile("urls.json", JSON.stringify(response), (err) => {
-                if (err) throw err;
-            });
+            let db = res.data.record;
+            return db;
         });
-
+    return response;
 }
 
 function writeToDatabase(db) {

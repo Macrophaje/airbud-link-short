@@ -12,9 +12,8 @@ app.use(cors());
 
 const port = process.env.PORT || 3000;
 
-const db = require(process.cwd() + '/urls.json');
-
-dbUtil.loadDatabase();
+let db; 
+dbUtil.loadDatabase().then((res) => db = res);
 
 app.get('/', (req, res) => {
     res.sendFile(process.cwd() + '/views/index.html');
