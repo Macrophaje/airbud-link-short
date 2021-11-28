@@ -22,8 +22,10 @@ app.get('/', (req, res) => {
 app.get('/:shortUrl', (req, res) => {
     const shortUrl = req.params.shortUrl;
     let urlToServe;
-    if (db.urls.some(item => item.short === shortUrl)) {
-        const index = db.urls.findIndex(item => item.short === shortUrl);
+    const findShortCode = item => item.short === shortUrl
+
+    if (db.urls.some(findShortCode)) {
+        const index = db.urls.findIndex(findShortCode);
         urlToServe = db.urls[index].long;
         res.redirect(urlToServe);
     } else {
@@ -49,6 +51,10 @@ app.post('/api/shorturl', (req,res) => {
                     res.json({"error": "Bad URL"});
                 } else {
                     shortUrl = codeGenerator.generateShortUrlCode();
+                    while (checkShortCodeIsUnique(shortUrl)) {
+                        shortUrl = codeGenerator.generateShortUrlCode();
+                    }
+
                     db.urls.push({"short": shortUrl, "long": urlToShorten});
                     dbUtil.writeToDatabase(db);
                     res.json({"Your short url": req.hostname + "/" + shortUrl});
@@ -66,3 +72,11 @@ app.listen(port, (err) => {
     if (err) throw err;
     console.log("App Running");
 });
+
+function checkShortCodeIsUnique(shortCode) {
+    if (db.urls.some(url => url.short === shortCode)){
+        return true;
+    } else {
+        return false
+    }
+}
