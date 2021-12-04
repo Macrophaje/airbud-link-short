@@ -47,7 +47,7 @@ app.post('/api/shorturl', (req,res) => {
     if (db.urls.some(findItem)) {
         const index = db.urls.findIndex(findItem)
         shortUrl = db.urls[index].short;
-        res.json({"Your short url": req.hostname + "/" + shortUrl});
+        res.json({"short-url": req.hostname + "/" + shortUrl});
     } else {
         try {
             host = new URL(urlToShorten).host
