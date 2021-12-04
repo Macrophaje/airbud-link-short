@@ -62,7 +62,7 @@ app.post('/api/shorturl', (req,res) => {
 
                     db.urls.push({"short": shortUrl, "long": urlToShorten});
                     dbUtil.writeToDatabase(db);
-                    res.json({"Your short url": req.hostname + "/" + shortUrl});
+                    res.json({"short-url": req.hostname + "/" + shortUrl});
                 }
             });
         } catch (err) {
