@@ -9,15 +9,20 @@ const dbUtil = require('./db');
 app.use(express.json());
 app.use(express.urlencoded({extended: false}))
 app.use(cors());
+app.use('/public', express.static(`${process.cwd()}/public`));
 
 const port = process.env.PORT || 3000;
 
 let db; 
 dbUtil.loadDatabase().then((res) => db = res);
 
+app.get('/.well-known/acme-challenge/NVJfTOCrMJO6YV0zA6-EruE4pimWqc6rxxxgEtBTGr0', (req, res) => {
+    res.sendFile(process.cwd() + '/public/cert');
+});
+
 app.get('/', (req, res) => {
     res.sendFile(process.cwd() + '/views/index.html');
-})
+});
 
 app.get('/:shortUrl', (req, res) => {
     const shortUrl = req.params.shortUrl;
@@ -31,7 +36,7 @@ app.get('/:shortUrl', (req, res) => {
     } else {
         res.json({"error": "Bad URL"});
     }
-})
+});
 
 app.post('/api/shorturl', (req,res) => {
     const urlToShorten = req.body.url;
@@ -66,7 +71,7 @@ app.post('/api/shorturl', (req,res) => {
         
     }
 
-})
+});
 
 app.listen(port, (err) => {
     if (err) throw err;
