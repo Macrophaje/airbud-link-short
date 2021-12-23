@@ -9,18 +9,22 @@ const dbUtil = require('./db');
 app.use(express.json());
 app.use(express.urlencoded({extended: false}))
 app.use(cors());
+// eslint-disable-next-line no-undef
 app.use('/public', express.static(`${process.cwd()}/public`));
 
+// eslint-disable-next-line no-undef
 const port = process.env.PORT || 3000;
 
 let db; 
 dbUtil.loadDatabase().then((res) => db = res);
 
 app.get('/.well-known/acme-challenge/NVJfTOCrMJO6YV0zA6-EruE4pimWqc6rxxxgEtBTGr0', (req, res) => {
+    // eslint-disable-next-line no-undef
     res.sendFile(process.cwd() + '/public/cert');
 });
 
 app.get('/', (req, res) => {
+    // eslint-disable-next-line no-undef
     res.sendFile(process.cwd() + '/views/index.html');
 });
 
@@ -47,7 +51,7 @@ app.post('/api/shorturl', (req,res) => {
     if (db.urls.some(findItem)) {
         const index = db.urls.findIndex(findItem)
         shortUrl = db.urls[index].short;
-        res.json({"Your short url": req.hostname + "/" + shortUrl});
+        res.json({"shortUrl": req.hostname + "/" + shortUrl});
     } else {
         try {
             host = new URL(urlToShorten).host
@@ -62,7 +66,7 @@ app.post('/api/shorturl', (req,res) => {
 
                     db.urls.push({"short": shortUrl, "long": urlToShorten});
                     dbUtil.writeToDatabase(db);
-                    res.json({"short-url": req.hostname + "/" + shortUrl});
+                    res.json({"shortUrl": req.hostname + "/" + shortUrl});
                 }
             });
         } catch (err) {
