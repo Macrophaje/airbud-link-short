@@ -6,16 +6,36 @@
         <title></title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="">
+        <link rel="stylesheet" href="/public/index.css">
     </head>
     <body>
-        <form action="/api/shortUrl" method="POST">
-            <fieldset>
-                <legend>URL SHORTENER</legend>
-                <label>URL INPUT</label>
-                <input name="url" placeholder="https://google.com" />
-                <input type="submit" value="Submit" />
-            </fieldset>
-        </form>
+        <div class="container">
+            <div class="header">
+                <div class="title">
+                    <h1>AIRBUD.DOG</h1>
+                </div>
+                <div class="sub-header">
+                    <h2>"Ain't no rule says a dog can't shorten links!"</h2>
+                </div>
+            </div>
+            <form name="url" id="url-input-form">
+                <fieldset class="fieldset">
+                    <div class="form-content">
+                        <label>URL INPUT:</label>
+                        <input id="url-input" name="url" placeholder="https://macrophaje.com" />
+                        <input id="submit-button" type="submit" value="Submit" onclick="getShortUrl(event)"/>
+                    </div>
+                </fieldset>
+            </form>
+            <div id='url-result-wrapper'>
+                <div id="short-url-text"></div>
+                <button id="copy-button" onclick="copyLink()" class="hidden-button">
+                    Copy Link
+                    <img src="">
+                </button>
+            </div>
+            
+        </div>
     </body>
+    <script src="/public/index.js"></script>
 </html>
