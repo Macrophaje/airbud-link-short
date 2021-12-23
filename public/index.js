@@ -2,7 +2,7 @@
 function getShortUrl(event) {
     event.preventDefault();
     const urlToShorten = document.getElementById("url-input").value;
-    const endpoint = "http://www.airbud.dog/api/shortUrl";
+    const endpoint = "https://www.airbud.dog/api/shortUrl";
     let req = JSON.stringify({
         'url': urlToShorten
     });
@@ -70,7 +70,6 @@ function buildShortLinkHtml(shortUrl) {
     textElement.innerHTML = "Your short url: ";
     textElement.id = "shortUrl"
 
-    anchorElement.href = shortUrl;
     anchorElement.innerHTML = shortUrl;
     anchorElement.id = "link-text"
     textElement.appendChild(anchorElement);
