@@ -2,7 +2,7 @@
 function getShortUrl(event) {
     event.preventDefault();
     const urlToShorten = document.getElementById("url-input").value;
-    const endpoint = "http://localhost:3000/api/shortUrl";
+    const endpoint = "http://www.airbud.dog/api/shortUrl";
     let req = JSON.stringify({
         'url': urlToShorten
     });
