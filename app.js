@@ -18,11 +18,6 @@ const port = process.env.PORT || 3000;
 let db; 
 dbUtil.loadDatabase().then((res) => db = res);
 
-app.get('/.well-known/acme-challenge/NVJfTOCrMJO6YV0zA6-EruE4pimWqc6rxxxgEtBTGr0', (req, res) => {
-    // eslint-disable-next-line no-undef
-    res.sendFile(process.cwd() + '/public/cert');
-});
-
 app.get('/', (req, res) => {
     // eslint-disable-next-line no-undef
     res.sendFile(process.cwd() + '/views/index.html');
