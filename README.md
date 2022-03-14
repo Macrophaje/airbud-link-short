@@ -10,14 +10,20 @@ In your request body, include a JSON object with the following shape
 ```{
     'url': <URL to be shortened>,
     'shortCode': <custom short code> //optional
-}```
+}
+```
 
 You will recieve a response in the form of a JSON object with one of two possible shpes:
 **1)**
-```{
+```
+{
     "shortUrl": <Your short URL>
-}```
+}
+```
+
 **2)**
-```{
+```
+{
     "error": <Some error>
-}```
+}
+```
