@@ -2,9 +2,11 @@
 function getShortUrl(event) {
     event.preventDefault();
     const urlToShorten = document.getElementById("url-input").value;
+    const shortCode = document.getElementById("short-code-input").value;
     const endpoint = "https://www.airbud.dog/api/shortUrl";
     let req = JSON.stringify({
-        'url': urlToShorten
+        'url': urlToShorten,
+        "shortCode": shortCode
     });
     const xhttp = new XMLHttpRequest();
     xhttp.onload = handleResponse;
@@ -21,10 +23,11 @@ function handleResponse() {
         if (responseObject.error) {
             displayError(responseObject.error)
         } else {
-            displayShortUrl(responseObject)
+            displayShortUrl(responseObject);
+            clearForm();
         }
     }
-    clearForm();
+
 }
 
 function displayShortUrl(responseObject) {
@@ -59,8 +62,8 @@ function displayError(error) {
 }
 
 function clearForm() {
-    const formUrlField = document.getElementById("url-input");
-    formUrlField.value = "";
+    const form = document.getElementById("url-input-form");
+    form.reset();
 }
 
 function buildShortLinkHtml(shortUrl) {
