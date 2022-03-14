@@ -5,15 +5,18 @@ This is a link shortening service built with Express JS. It has both a front end
 ## API
 
 In order to make API requests, send a POST request to https//www.airbud.dog/api/shorturl.
-Include in your request header `'Content-type', 'application/json; charset=utf-8'`
-In your request body, include a JSON object with the following shape 
-```{
+Include in your request header `'Content-type', 'application/json; charset=utf-8'`.
+In your request body, include a JSON object with the following shape:
+
+```
+{
     'url': <URL to be shortened>,
     'shortCode': <custom short code> //optional
 }
 ```
 
 You will recieve a response in the form of a JSON object with one of two possible shpes:
+
 **1)**
 ```
 {
