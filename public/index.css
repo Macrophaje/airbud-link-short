@@ -11,11 +11,16 @@
 }
 
 .fieldset {
-    width: 300px;
+    width: 500px;
+    height: 50px;
     padding: 10px;
 }
 .form-content {
     text-align: center;
+}
+
+#short-code-input {
+    width: 50px;
 }
 
 #submit-button {
