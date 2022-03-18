@@ -38,47 +38,46 @@ app.get('/:shortUrl', (req, res) => {
         urlToServe = db.urls[index].long;
         res.redirect(urlToServe);
     } else {
-        res.json({"error": "Bad URL"});
+        sendError(res, "Bad URL");
     }
 });
 
 //Handle API requests to shorten a URL
 app.post('/api/shorturl', (req,res) => {
     const urlToShorten = req.body.url;
-    let shortUrl = req.body.shortCode;
+    let shortCode = req.body.shortCode;
     const findItem = url => url.long === urlToShorten;
     let host;
 
     //If the request includes a custom short code to use, don't check if the long URL is already in the DB.
-    if (shortUrl) {
+    if (shortCode) {
         try {
-            //Check host is valid
-            host = new URL(urlToShorten).host
-            dns.lookup(host, (err) => {
-                if (err) {
-                    res.json({"error": "Bad URL"});
-                } else {
-                    //Make sure the short code doesn't exist in DB already
-                    if(!checkShortCodeIsUnique(shortUrl)) {
-                        res.json({"error": "Short URL already in use"});
+            //Make sure the short code doesn't exist in DB already
+            if(!checkShortCodeIsUnique(shortCode)) {
+                sendError(res, "Short code already in use");
+            } else {    
+                //Check host is valid
+                host = new URL(urlToShorten).host
+                dns.lookup(host, (err) => {
+                    if (err) {
+                        sendError(res, "Bad URL");
                     } else {
                         //Save the association in the DB and return the short url.
-                        db.urls.push({"short": shortUrl, "long": urlToShorten});
-                        dbUtil.writeToDatabase(db);
-                        res.json({"shortUrl": req.hostname + "/" + shortUrl});
+                        updateDB(db, shortCode, urlToShorten);
+                        sendShortUrl(req, res, shortCode);
                     }
-                }
-            });
+                });
+            }
         } catch (err) {
-            res.json({"error": "Bad URL"});
+            sendError(res, "Bad URL");
         }
 
     //If not short code is provided, check to see if the long URL is in the DB already.
     } else if (db.urls.some(findItem)) {
         //Return the existing short url
         const index = db.urls.findIndex(findItem)
-        shortUrl = db.urls[index].short;
-        res.json({"shortUrl": req.hostname + "/" + shortUrl});
+        shortCode = db.urls[index].short;
+        sendShortUrl(req, res, shortCode);
 
     //If the long URL is new, get ready to generate a new short code
     } else {
@@ -87,22 +86,20 @@ app.post('/api/shorturl', (req,res) => {
             host = new URL(urlToShorten).host
             dns.lookup(host, (err) => {
                 if (err) {
-                    res.json({"error": "Bad URL"});
+                    sendError(res, "Bad URL");
                 } else {
                     //Generate a short code and make sure it is unique
-                    shortUrl = codeGenerator.generateShortUrlCode();
-                    while (!checkShortCodeIsUnique(shortUrl)) {
-                        shortUrl = codeGenerator.generateShortUrlCode();
+                    shortCode = codeGenerator.generateShortUrlCode();
+                    while (!checkShortCodeIsUnique(shortCode)) {
+                        shortCode = codeGenerator.generateShortUrlCode();
                     }
-
                     //Save the association in the DB and return the short url.
-                    db.urls.push({"short": shortUrl, "long": urlToShorten});
-                    dbUtil.writeToDatabase(db);
-                    res.json({"shortUrl": req.hostname + "/" + shortUrl});
+                    updateDB(db, shortCode, urlToShorten);
+                    sendShortUrl(req, res, shortCode);
                 }
             });
         } catch (err) {
-            res.json({"error": "Bad URL"});
+            sendError(res, "Bad URL");
         }
     }
 });
@@ -120,4 +117,20 @@ function checkShortCodeIsUnique(shortCode) {
     } else {
         return true;
     }
+}
+
+//Send a server resonse with the short URL
+function sendShortUrl(req, res, shortCode) {
+    res.json({"shortUrl": "https://" + req.hostname + "/" + shortCode});
+}
+
+//Send a serveer response with the error reason
+function sendError(res, errorReasion) {
+    res.json({"error": errorReasion});
+}
+
+//Update the session DB and the remote DB
+function updateDB(db, shortCode, urlToShorten) {
+    db.urls.push({"short": shortCode, "long": urlToShorten});
+    dbUtil.writeToDatabase(db);
 }
