@@ -52,8 +52,11 @@ app.post('/api/shorturl', (req,res) => {
     //If the request includes a custom short code to use, don't check if the long URL is already in the DB.
     if (shortCode) {
         try {
+            //Check that the short code is valid
+            if (!codeGenerator.checkValidShortCode(shortCode)){
+                sendError(res, "Short code must only be alphanumeric characters");
             //Make sure the short code doesn't exist in DB already
-            if(!checkShortCodeIsUnique(shortCode)) {
+            } else if(!checkShortCodeIsUnique(shortCode)) {
                 sendError(res, "Short code already in use");
             } else {    
                 //Check host is valid
@@ -125,8 +128,8 @@ function sendShortUrl(req, res, shortCode) {
 }
 
 //Send a serveer response with the error reason
-function sendError(res, errorReasion) {
-    res.json({"error": errorReasion});
+function sendError(res, errorReason) {
+    res.json({"error": errorReason});
 }
 
 //Update the session DB and the remote DB
