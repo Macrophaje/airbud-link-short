@@ -1,31 +1,31 @@
 const { default: axios } = require('axios');
-const dbUrl = process.env.DB_URL;
-const masterKey = process.env.JSON_BIN_KEY;
+const dbUrl = "https://api.jsonbin.io/v3/b/61a26a5862ed886f9155b0b7";
+const masterKey = "$2b$10$Axz1lWEAPJAcCk46p/IiTO0d.tL.Xh.2LaDwEzrz7.mPxZ3zy1ojq";
 
-async function loadDatabase() {
-    const getUrl = dbUrl + "/latest";
-    const config = {
-        headers : {
-            "X-Master-Key" : masterKey
-        }
-    }
-    let response = await axios.get(getUrl, config)
-        .then((res) => {
-            let db = res.data.record;
-            return db;
-        });
-    return response;
+const pgp = require('pg-promise')();
+const cn = {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    //for local testing
+    // ssl: {rejectUnauthorized: false}
+    ssl: true
+};
+const db = pgp(cn);
+
+async function getUrl(shortCode) {
+    return await db.one('SELECT url FROM link_relations WHERE short_code = $1', shortCode);
 }
 
-function writeToDatabase(db) {
-    const config = {
-        headers : {
-            "X-Master-Key" : masterKey,
-            "Content-Type" : "application/json"
-        }
-    }
-
-    axios.put(dbUrl, db, config)
+async function getShortCode(shortCode) {
+    return await db.one('SELECT short_code FROM link_relations WHERE short_code = $1', shortCode);
 }
 
-module.exports = {loadDatabase, writeToDatabase}
+async function writeToDatabase(shortCode, url, isCustom) {
+    return await db.none('INSERT INTO link_relations(short_code, url, custom_code) VALUES($1, $2, $3)',
+    [shortCode, url, isCustom]);
+}
+
+module.exports = {getUrl, getShortCode, writeToDatabase}
