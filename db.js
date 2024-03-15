@@ -1,7 +1,3 @@
-const { default: axios } = require('axios');
-const dbUrl = "https://api.jsonbin.io/v3/b/61a26a5862ed886f9155b0b7";
-const masterKey = "$2b$10$Axz1lWEAPJAcCk46p/IiTO0d.tL.Xh.2LaDwEzrz7.mPxZ3zy1ojq";
-
 const pgp = require('pg-promise')();
 const cn = {
     host: process.env.DB_HOST,
@@ -16,11 +12,22 @@ const cn = {
 const db = pgp(cn);
 
 async function getUrl(shortCode) {
-    return await db.one('SELECT url FROM link_relations WHERE short_code = $1', shortCode);
+    return await db.oneOrNone('SELECT url FROM link_relations WHERE short_code = $1', shortCode);
 }
 
 async function getShortCode(shortCode) {
-    return await db.one('SELECT short_code FROM link_relations WHERE short_code = $1', shortCode);
+    return await db.oneOrNone('SELECT short_code FROM link_relations WHERE short_code = $1', shortCode)
+}
+
+async function shortCodeAvailable(shortCode) {
+    return await getShortCode(shortCode).then((response) => {
+        //No rows returned from DB
+        if (response === null) {
+            return true;
+        } else {
+            return false;
+        }
+    });
 }
 
 async function writeToDatabase(shortCode, url, isCustom) {
@@ -28,4 +35,4 @@ async function writeToDatabase(shortCode, url, isCustom) {
     [shortCode, url, isCustom]);
 }
 
-module.exports = {getUrl, getShortCode, writeToDatabase}
+module.exports = {getUrl, getShortCode, shortCodeAvailable, writeToDatabase}
