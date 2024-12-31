@@ -18,9 +18,8 @@
   },
   "homepage": "https://github.com/Macrophaje/airbud-link-short#readme",
   "dependencies": {
-    "axios": "^0.24.0",
+    "axios": "^1.7.9",
     "cors": "^2.8.5",
-    "dns": "^0.2.2",
     "express": "^4.17.1"
   },
   "devDependencies": {
