@@ -45,7 +45,7 @@ app.get('/:shortUrl', async (req, res) => {
             res.redirect(dbData.url);
         }
     } catch (error) {
-        sendError(error.message)
+        sendError(res, error.message)
     }
 });
 
@@ -64,8 +64,8 @@ app.post('/api/shorturl', async (req,res) => {
                 sendError(res, "Short code must only be alphanumeric characters");
             //Make sure the short code doesn't exist in DB already
             } else {
-                const dbData = await dbUtil.getShortCode(shortCode);
-                if (dbData != null) {
+                const isShortCodeAvailable = await dbUtil.shortCodeAvailable(shortCode);
+                if (!isShortCodeAvailable) {
                     sendError(res, "Short code already in use");
                 } else {
                     //Check host is valid

@@ -1,10 +1,6 @@
 const pgp = require('pg-promise')();
 const cn = {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    database: process.env.DB_NAME,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    connectionString: process.env.DATABASE_URL,
     //for local testing
     // ssl: {rejectUnauthorized: false}
     ssl: true
@@ -20,14 +16,7 @@ async function getShortCode(shortCode) {
 }
 
 async function shortCodeAvailable(shortCode) {
-    return await getShortCode(shortCode).then((response) => {
-        //No rows returned from DB
-        if (response === null) {
-            return true;
-        } else {
-            return false;
-        }
-    });
+    return await getShortCode(shortCode) === null;
 }
 
 async function writeToDatabase(shortCode, url, isCustom) {
