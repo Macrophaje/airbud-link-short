@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -15,94 +16,92 @@ app.use('/public', express.static(`${process.cwd()}/public`));
 // eslint-disable-next-line no-undef
 const port = process.env.PORT || 3000;
 
-//Load the JSON Databas into local memory
-//TODO: Move to a SQL DB
-let db; 
-dbUtil.loadDatabase().then((res) => db = res);
-
 //Redirect root requests to the front-end html page
 app.get('/', (req, res) => {
     // eslint-disable-next-line no-undef
     res.sendFile(process.cwd() + '/views/index.html');
 });
 
-//Handle requests to a short url
-app.get('/:shortUrl', (req, res) => {
-    const shortUrl = req.params.shortUrl;
-    let urlToServe;
-    const findShortCode = item => item.short === shortUrl
+app.get('/favicon.ico', (req, res) => {
+    res.send();
+});
 
-    //Check if the short url is in the DB and redirect if so.
-    if (db.urls.some(findShortCode)) {
-        const index = db.urls.findIndex(findShortCode);
-        urlToServe = db.urls[index].long;
-        res.redirect(urlToServe);
-    } else {
-        sendError(res, "Bad URL");
+//Handle requests to a short url
+app.get('/:shortUrl', async (req, res) => {
+    const shortCode = req.params.shortUrl;
+    if (shortCode === undefined) {
+        return;
+    }
+
+    try {
+        //fetch url from db
+        const dbData = await dbUtil.getUrl(shortCode);
+        //nothing came back
+        if(dbData === null){
+            sendError("short code does not exist");
+            return;
+        } else {
+            //redirect to the url
+            res.redirect(dbData.url);
+        }
+    } catch (error) {
+        sendError(res, error.message)
     }
 });
 
 //Handle API requests to shorten a URL
-app.post('/api/shorturl', (req,res) => {
+app.post('/api/shorturl', async (req,res) => {
     const urlToShorten = req.body.url;
     let shortCode = req.body.shortCode;
-    const findItem = url => url.long === urlToShorten;
+    // const findItem = url => url.long === urlToShorten;
     let host;
 
     //If the request includes a custom short code to use, don't check if the long URL is already in the DB.
     if (shortCode) {
         try {
             //Check that the short code is valid
-            if (!codeGenerator.checkValidShortCode(shortCode)){
+            if (!codeGenerator.checkValidShortCode(shortCode)) {
                 sendError(res, "Short code must only be alphanumeric characters");
             //Make sure the short code doesn't exist in DB already
-            } else if(!checkShortCodeIsUnique(shortCode)) {
-                sendError(res, "Short code already in use");
-            } else {    
-                //Check host is valid
-                host = new URL(urlToShorten).host
-                dns.lookup(host, (err) => {
-                    if (err) {
-                        sendError(res, "Bad URL");
-                    } else {
-                        //Save the association in the DB and return the short url.
-                        updateDB(db, shortCode, urlToShorten);
-                        sendShortUrl(req, res, shortCode);
-                    }
-                });
+            } else {
+                const isShortCodeAvailable = await dbUtil.shortCodeAvailable(shortCode);
+                if (!isShortCodeAvailable) {
+                    sendError(res, "Short code already in use");
+                } else {
+                    //Check host is valid
+                    host = new URL(urlToShorten).host;
+                    dns.lookup(host, async (err) => {
+                        if (err) {
+                            sendError(res, "Bad URL");
+                        } else {
+                            //Commit to DB and return
+                            await dbUtil.writeToDatabase(shortCode, urlToShorten, true);
+                            sendShortUrl(req, res, shortCode);
+                        }
+                    });
+                }
             }
         } catch (err) {
-            sendError(res, "Bad URL");
+            sendError(res, err.message, err.code);
         }
-
-    //If not short code is provided, check to see if the long URL is in the DB already.
-    } else if (db.urls.some(findItem)) {
-        //Return the existing short url
-        const index = db.urls.findIndex(findItem)
-        shortCode = db.urls[index].short;
-        sendShortUrl(req, res, shortCode);
 
     //If the long URL is new, get ready to generate a new short code
     } else {
         try {
             //Check the host is valid
             host = new URL(urlToShorten).host
-            dns.lookup(host, (err) => {
+            dns.lookup(host, async (err) => {
                 if (err) {
                     sendError(res, "Bad URL");
                 } else {
-                    //Generate a short code and make sure it is unique
-                    shortCode = codeGenerator.generateShortUrlCode();
-                    while (!checkShortCodeIsUnique(shortCode)) {
-                        shortCode = codeGenerator.generateShortUrlCode();
-                    }
-                    //Save the association in the DB and return the short url.
-                    updateDB(db, shortCode, urlToShorten);
+                    //Get 
+                    shortCode = await generateUniqueShortCode();
+                    await dbUtil.writeToDatabase(shortCode, urlToShorten, false);
                     sendShortUrl(req, res, shortCode);
                 }
             });
         } catch (err) {
-            sendError(res, "Bad URL");
+            sendError(res, err.message, err.code);
         }
     }
 });
@@ -110,18 +109,19 @@ app.post('/api/shorturl', (req,res) => {
 //Log the App starting successfully
 app.listen(port, (err) => {
     if (err) throw err;
-    console.log("App Running");
+    console.log("App Running on port: " + port);
 });
 
-//Check if the short code is present in the DB
-function checkShortCodeIsUnique(shortCode) {
-    if (db.urls.some(url => url.short === shortCode)){
-        return false;
-    } else {
-        return true;
+//Make sure short code does not exist in the DB
+async function generateUniqueShortCode() {
+    let loop = true;
+    while (loop) {
+        const shortCode = codeGenerator.generateShortUrlCode();
+        if (await dbUtil.shortCodeAvailable(shortCode)) {
+            return shortCode;
+        }
     }
 }
-
 //Send a server resonse with the short URL
 function sendShortUrl(req, res, shortCode) {
     res.json({"shortUrl": "https://" + req.hostname + "/" + shortCode});
@@ -130,10 +130,4 @@ function sendShortUrl(req, res, shortCode) {
 //Send a serveer response with the error reason
 function sendError(res, errorReason) {
     res.json({"error": errorReason});
-}
-
-//Update the session DB and the remote DB
-function updateDB(db, shortCode, urlToShorten) {
-    db.urls.push({"short": shortCode, "long": urlToShorten});
-    dbUtil.writeToDatabase(db);
 }
