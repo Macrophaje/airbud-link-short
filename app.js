@@ -2,7 +2,7 @@ require('dotenv').config()
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const dns = require('dns');
+const dns = require('node:dns');
 require('url').URL;
 const codeGenerator = require('./shortCodeGenerator');
 const dbUtil = require('./db');
