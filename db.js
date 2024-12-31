@@ -3,7 +3,6 @@ const cn = {
     connectionString: process.env.DATABASE_URL,
     //for local testing
     // ssl: {rejectUnauthorized: false}
-    ssl: true
 };
 const db = pgp(cn);
 
