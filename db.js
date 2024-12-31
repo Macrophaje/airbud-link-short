@@ -1,27 +1,31 @@
-const pgp = require('pg-promise')();
-const cn = {
-    connectionString: process.env.DATABASE_URL,
-    //for local testing
-    // ssl: {rejectUnauthorized: false}
-    ssl: true
-};
-const db = pgp(cn);
+const { default: axios } = require('axios');
+const dbUrl = process.env.DB_URL;
+const masterKey = process.env.JSON_BIN_KEY;
 
-async function getUrl(shortCode) {
-    return await db.oneOrNone('SELECT url FROM link_relations WHERE short_code = $1', shortCode);
+async function loadDatabase() {
+    const getUrl = dbUrl + "/latest";
+    const config = {
+        headers : {
+            "X-Master-Key" : masterKey
+        }
+    }
+    let response = await axios.get(getUrl, config)
+        .then((res) => {
+            let db = res.data.record;
+            return db;
+        });
+    return response;
 }
 
-async function getShortCode(shortCode) {
-    return await db.oneOrNone('SELECT short_code FROM link_relations WHERE short_code = $1', shortCode)
+function writeToDatabase(db) {
+    const config = {
+        headers : {
+            "X-Master-Key" : masterKey,
+            "Content-Type" : "application/json"
+        }
+    }
+
+    axios.put(dbUrl, db, config)
 }
 
-async function shortCodeAvailable(shortCode) {
-    return await getShortCode(shortCode) === null;
-}
-
-async function writeToDatabase(shortCode, url, isCustom) {
-    return await db.none('INSERT INTO link_relations(short_code, url, custom_code) VALUES($1, $2, $3)',
-    [shortCode, url, isCustom]);
-}
-
-module.exports = {getUrl, getShortCode, shortCodeAvailable, writeToDatabase}
+module.exports = {loadDatabase, writeToDatabase}
