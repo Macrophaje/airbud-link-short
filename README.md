@@ -30,13 +30,3 @@ You will recieve a response in the form of a JSON object with one of two possibl
     "error": <Some error>
 }
 ```
-
-## Running Locally
-
-Create a .env file to host your DB creds
-
-Change the ssl value in [db.js](./db.js)
-
-Change the api endpoint in [index.js](./public/index.js)
-
-run `npm start`
