@@ -38,7 +38,7 @@ app.get('/:shortUrl', async (req, res) => {
         const dbData = await dbUtil.getUrl(shortCode);
         //nothing came back
         if(dbData === null){
-            sendError("short code does not exist");
+            sendError(res, "short code does not exist");
             return;
         } else {
             //redirect to the url
