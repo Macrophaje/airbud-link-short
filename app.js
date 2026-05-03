@@ -85,7 +85,7 @@ app.post('/api/shorturl', async (req,res) => {
             sendError(res, err.message, err.code);
         }
 
-    //If the long URL is new, get ready to generate a new short code
+    //If there is no provided short code, make one for the user
     } else {
         try {
             //Check the host is valid
@@ -94,10 +94,18 @@ app.post('/api/shorturl', async (req,res) => {
                 if (err) {
                     sendError(res, "Bad URL");
                 } else {
-                    //Get 
-                    shortCode = await generateUniqueShortCode();
-                    await dbUtil.writeToDatabase(shortCode, urlToShorten, false);
-                    sendShortUrl(req, res, shortCode);
+                    //Get an exitsing short code for this url if it exists
+                    const existingShortCodes = await dbUtil.getExistingShortCodes(urlToShorten);
+                    if (existingShortCodes.length > 0) {
+                        //Resue first existing short code
+                        shortCode = existingShortCodes[0].short_code;
+                        sendShortUrl(req, res, shortCode);
+                    } else {
+                        //Generate a new short code and provide it to the user
+                        shortCode = await generateUniqueShortCode();
+                        await dbUtil.writeToDatabase(shortCode, urlToShorten, false);
+                        sendShortUrl(req, res, shortCode);
+                    }
                 }
             });
         } catch (err) {
